@@ -91,7 +91,7 @@ distube
     .on("searchCancel", (message) => message.channel.send(`Searching canceled`))
     .on("error", (channel, e) => {
         console.error(e)
-	    channel.send(`An error encoutered: ${e.message.slice(0, 1979)}`) // Discord limits 2000 characters in a message
+	    channel.send(`${e.message.slice(0, 1979)}`) // Discord limits 2000 characters in a message
     });
 
 client.login(config.token);
