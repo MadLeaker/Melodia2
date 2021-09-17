@@ -3,7 +3,7 @@ const Discord = require('discord.js'),
     DisTube = require('distube'),
     client = new Discord.Client({intents: ["GUILDS", "GUILD_VOICE_STATES", "GUILD_MESSAGES"]}),
     config = {
-        prefix: ".",
+        prefix: "[]",
         token: process.env.TOKEN || "Bitch no token here!"
     };
 
