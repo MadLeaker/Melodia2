@@ -62,8 +62,8 @@ client.on("messageCreate", async (message) => {
         message.channel.send("Current queue filter: " + (filter || "Off"));
     }
 
-    if("clear" == command) {
-        let filter = distube.setFilter(message, false);
+    if(command == "clear") {
+        distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }
 });
