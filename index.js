@@ -8,7 +8,7 @@ const Discord = require('discord.js'),
     };
 
 // Create a new DisTube
-const distube = new DisTube.default(client)
+const distube = new DisTube.default(client, {searchSongs: 5})
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -61,9 +61,11 @@ const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filt
 
 // DisTube event listeners, more in the documentation page
 distube
-    .on("playSong", (queue, song) => queue.textChannel.send(
-        `Playing \`${song.name}\` - \`${song.formattedDuration}\`\nRequested by: ${song.user}\n${status(queue)}`
-    ))
+    .on("playSong", (queue, song) => {
+        let msg = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
+        if (song.playlist) msg = `Playlist: ${song.playlist.name}\n${msg}`
+        queue.textChannel.send(msg)
+    })
     .on("addSong", (queue, song) => queue.textChannel.send(
         `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
     ))
