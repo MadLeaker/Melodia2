@@ -71,7 +71,7 @@ client.on("messageCreate", async (message) => {
 
     if(command == "leave") {
        let queue = distube.getQueue(message)
-       if(!queue) message.channel.send("Not in a voice channel!")
+       if(!queue) return message.channel.send("Not in a voice channel!")
        queue.voice.leave()
        queue.delete()
     }
