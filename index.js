@@ -28,12 +28,46 @@ client.on("messageCreate", async (message) => {
     if (["play", "p"].includes(command))
         distube.play(message, args.join(" "));
 
-    if (["repeat", "loop"].includes(command))
-        distube.setRepeatMode(message, RepeatMode.SONG);
-    if (["repeatq", "loopq"].includes(command))
-        distube.setRepeatMode(message, RepeatMode.QUEUE);
+    if (["repeat", "loop"].includes(command)) {
+        let type = args[0]
+        let queue = distube.getQueue(message)
+        if(!queue) {
+            return message.channel.send("No songs in queue!")
+        }
+        if(type == "s") {
+            distube.setRepeatMode(message, RepeatMode.SONG);
+            message.channel.send("Repeating current song: " + distube.getQueue(message).songs[0].name)
+
+        }
+        else if(type == "q") {
+            distube.setRepeatMode(message, RepeatMode.QUEUE);
+            message.channel.send("Repeating current queue")
+
+        }
+        else {
+            distube.setRepeatMode(message, RepeatMode.DISABLED);
+            message.channel.send("Repeating has been disabled!")
+        }
+    }
+
+    if(command == "seek") {
+        let queue = distube.getQueue(message)
+        if(!queue) return message.channel.send("Nothing in queue!")
+        let curSong = queue.songs[0]
+        if(!curSong) {
+            return message.channel.send("Nothing in queue!")
+        }
+        if(args[0] < 0 || args[0] > curSong.duration) {
+            return message.channel.send("Can't seek longer than the duration of the song or shorter than 0!")
+        }
+        distube.seek(message, args[0])
+    }
 
     if (command == "stop") {
+        let queue = distube.getQueue(message)
+        if(!queue) {
+            return message.channel.send("No songs in queue!")
+        }
         distube.stop(message);
         message.channel.send("Stopped the music!");
     }
@@ -52,6 +86,7 @@ client.on("messageCreate", async (message) => {
 
     if (["q", "queue"].includes(command)) {
         let queue = distube.getQueue(message);
+        if(!queue) return message.channel.send("No songs in queue!")
         message.channel.send('Current queue:\n' + queue.songs.map((song, id) =>
             `**${id + 1}**. ${song.name} - \`${song.formattedDuration}\``
         ).slice(0, 10).join("\n"));
@@ -68,6 +103,17 @@ client.on("messageCreate", async (message) => {
         distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }
+    if(["r", "remove"].includes(command)) {
+        let queue = distube.getQueue(message)
+        if(!queue) return message.channel.send("No songs in the queue!");
+        let index = args[0]
+        if(index < 0 || index > queue.songs.length) {
+            return message.channel.send("Song not found!")
+        }
+        let deleted = queue.songs.splice(args[0], 1)[0]
+        message.channel.send(`Deleted the song: ${deleted.name} - ${deleted.formattedDuration} from the queue!`);
+    }
+
 
     if(command == "leave") {
        let queue = distube.getQueue(message)
@@ -108,7 +154,7 @@ distube
         message.channel.send("No songs have been found!")
     })
     .on("searchDone", (msg, answer) => {
-        msg.channel.send(`Searching done`)
+        msg.channel.send(`Adding ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`)
     })
     .on("searchInvalidAnswer", (message) => {
     })
