@@ -63,9 +63,15 @@ const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filt
 // DisTube event listeners, more in the documentation page
 distube
     .on("playSong", (queue, song) => {
-        let msg = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
-        if (song.playlist) msg = `Playlist: ${song.playlist.name}\n${msg}`
-        queue.textChannel.send(msg)
+        if(song) {
+            let msg = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
+            if (song.playlist) msg = `Playlist: ${song.playlist.name}\n${msg}`
+            queue.textChannel.send(msg)
+        }
+        else {
+            queue.textChannel.send("Nothing in queue!")
+        }
+        
     })
     .on("addSong", (queue, song) => queue.textChannel.send(
         `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
