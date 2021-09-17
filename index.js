@@ -31,8 +31,17 @@ client.on("messageCreate", async (message) => {
         message.channel.send("Stopped the music!");
     }
 
-    if (command == "skip")
-        distube.skip(message);
+    if (command == "skip") {
+        const queue = distube.getQueue(message)
+        if(!queue) return message.channel.send("Nothing in queue!")
+        try {
+            distube.skip(message)
+            message.channel.send(`Skipped!`)
+        } catch (e) {
+            message.channel.send(`${e}`)
+        }
+    }
+        
 
     if (command == "queue") {
         let queue = distube.getQueue(message);
