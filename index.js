@@ -63,6 +63,8 @@ client.on("messageCreate", async (message) => {
     }
 
     if(command == "clear") {
+        let queue = distube.getQueue(message)
+        if(!queue || !queue.filters || queue.filters.length == 0) return message.channel.send("No filters in the queue!");
         distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }
@@ -102,7 +104,6 @@ distube
         msg.channel.send(`Searching done`)
     })
     .on("searchInvalidAnswer", (message) => {
-        message.channel.send(`Invalid answer`)
     })
     // DisTubeOptions.searchSongs = true
     .on("searchCancel", (message) => message.channel.send(`Searching canceled`))
