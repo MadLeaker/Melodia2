@@ -68,6 +68,12 @@ client.on("messageCreate", async (message) => {
         distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }
+
+    if(command == "leave") {
+       let queue = distube.getQueue(message)
+       queue.voice.leave()
+       queue.delete()
+    }
 });
 
 // Queue status template
