@@ -84,8 +84,8 @@ distube
         let i = 0;
         message.channel.send(`**Choose an option from below**\n${result.map(song => `**${++i}**. ${song.name} - \`${song.formattedDuration}\``).join("\n")}\n*Enter anything else or wait 60 seconds to cancel*`);
     })
-    .on("searchInvalidAnswer", (message, answer, query) => {
-        message.channel.send(`${answer.content} isn't a valid answer!`)
+    .on("searchNoResult", (message, query) => {
+        message.channel.send("No songs have been found!")
     })
     // DisTubeOptions.searchSongs = true
     .on("searchCancel", (message) => message.channel.send(`Searching canceled`))
