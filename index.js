@@ -8,7 +8,8 @@ const Discord = require('discord.js'),
     };
 
 // Create a new DisTube
-const distube = new DisTube.default(client, {searchSongs: 5})
+const distube = new DisTube.default(client)
+distube.options.searchSongs = 5
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
