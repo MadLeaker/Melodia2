@@ -28,6 +28,13 @@ client.on("messageCreate", async (message) => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
+    if(command == "prefix") {
+        if(!args[0]) return message.channel.send("My prefix here is: " + prefix)
+        DB.set(message.guild.id, args[0])
+        return message.channel.send("Set the server prefix to: " + args[0])
+    }
+
+
     if (["play", "p"].includes(command))
         distube.play(message, args.join(" "));
 
