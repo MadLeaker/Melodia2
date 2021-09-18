@@ -1,4 +1,4 @@
-const { RepeatMode, default: dist } = require("distube");
+const { RepeatMode } = require("distube");
 const DB = require("quick.db")
 
 // DisTube example bot, definitions, properties and events details in the Documentation page.
@@ -12,17 +12,14 @@ const Discord = require('discord.js'),
     };
 
 // Create a new DisTube
-const distube = new DisTube.default(client)
-distube.options.searchSongs = 5
-distube.options.leaveOnStop = false
-distube.options.emitNewSongOnly = true
+const distube = new DisTube(client, {emitNewSongOnly: true, searchSongs: true, leaveOnStop: false, leaveOnFinish: false})
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setActivity("Music!", {type: "PLAYING"})
 });
 
-client.on("messageCreate", async (message) => {
+client.on("message", async (message) => {
     let prefix = DB.get(message.guild.id) || config.prefix
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
@@ -85,6 +82,7 @@ client.on("messageCreate", async (message) => {
 
     if (command == "skip") {
         const queue = distube.getQueue(message)
+        queue.autoplay = false
         if(!queue || queue.songs.length <= 0) return message.channel.send("Nothing in queue!")
         try {
             await distube.skip(message)
@@ -132,7 +130,7 @@ client.on("messageCreate", async (message) => {
         }
         let deleted = songsClone.splice(index-1, 1)[0]
         queue.songs = [queue.songs[0],...songsClone]
-        if(deleted) return message.channel.send(`Deleted the song: \`${deleted.name} - ${deleted.formattedDuration}\' from the queue!`);
+        if(deleted) return message.channel.send(`Deleted the song: \`${deleted.name} - ${deleted.formattedDuration}\` from the queue!`);
         
         message.channel.send("Error occured!");
     }
@@ -150,40 +148,36 @@ const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filt
 
 // DisTube event listeners, more in the documentation page
 distube
-    .on("playSong", (queue, song) => {
+    .on("playSong", (msg, queue, song) => {
         if(song) {
-            let msg = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
-            if (song.playlist) msg = `Playlist: ${song.playlist.name}\n${msg}`
-            queue.textChannel.send(msg)
+            let msg1 = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
+            msg.channel.send(msg1)
         }
         else {
-            queue.textChannel.send("Nothing in queue!")
+            msg.channel.send("Nothing in queue!")
         }
         
     })
-    .on("addSong", (queue, song) => queue.textChannel.send(
-        `Added ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`
+    .on("addSong", (msg, queue, song) => msg.channel.send(
+        `Added \`${song.name} - ${song.formattedDuration}\` to the queue by ${song.user}`
     ))
-    .on("addList", (queue, playlist) => queue.textChannel.send(
+    .on("addList", (msg, queue, playlist) => msg.channel.send(
         `Added \`${playlist.name}\` playlist (${playlist.songs.length} songs) to queue\n${status(queue)}`
     ))
+    .on("playList", (msg, queue, p) => {
+        msg.channel.send(
+            `Playing \`${p.name}\` playlist (${p.songs.length} songs)`)
+    })
     // DisTubeOptions.searchSongs = true
     .on("searchResult", (message, result) => {
         let i = 0;
         message.channel.send(`**Choose an option from below**\n${result.map(song => `**${++i}**. ${song.name} - \`${song.formattedDuration}\``).join("\n")}\n*Enter anything else or wait 60 seconds to cancel*`);
     })
-    .on("searchNoResult", (message, query) => {
-        message.channel.send("No songs have been found!")
-    })
-    .on("searchDone", (msg, answer) => {
-    })
-    .on("searchInvalidAnswer", (message) => {
-    })
     // DisTubeOptions.searchSongs = true
     .on("searchCancel", (message) => message.channel.send(`Searching canceled`))
-    .on("error", (channel, e) => {
+    .on("error", (msg, e) => {
         console.error(e)
-	    channel.send(`${e.name}`) // Discord limits 2000 characters in a message
+	    msg.channel.send(`${e.name}`) // Discord limits 2000 characters in a message
     })
 
 client.login(config.token);
