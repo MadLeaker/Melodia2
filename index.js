@@ -19,6 +19,7 @@ distube.options.emitNewSongOnly = true
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    client.
 });
 
 client.on("messageCreate", async (message) => {
@@ -137,7 +138,7 @@ client.on("messageCreate", async (message) => {
     }
     if(command == "leave") {
        let queue = distube.getQueue(message)
-       if(!queue) return message.channel.send("Not in a voice channel!")
+       if(!queue.voice) return message.channel.send("Not in a voice channel!")
        queue.voice.leave()
        queue.delete()
        message.channel.send("Successfully left the voice channel!")
