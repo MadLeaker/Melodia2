@@ -34,27 +34,32 @@ client.on("message", async (message) => {
 
 
     if (["play", "p"].includes(command))
+    {
         distube.play(message, args.join(" "));
+        let queue = distube.getQueue(message)
+        queue.autoplay = false
+    }
 
     if (["repeat", "loop", "r", "l"].includes(command)) {
-        let type = args[0]
         let queue = distube.getQueue(message)
-        if(!queue) {
-            return message.channel.send("No songs in queue!")
-        }
-        if(type == "s") {
-            distube.setRepeatMode(message, RepeatMode.SONG);
-            message.channel.send("Repeating current song: " + distube.getQueue(message).songs[0].name)
-
-        }
-        else if(type == "q") {
-            distube.setRepeatMode(message, RepeatMode.QUEUE);
-            message.channel.send("Repeating current queue")
-
+        if(!queue) return message.channel.send("Nothing in queue!")
+        let repeatMode = distube.setRepeatMode(message, 1)
+        if(repeatMode == 1) {
+            return message.channel.send("Repeating current song!")
         }
         else {
-            distube.setRepeatMode(message, RepeatMode.DISABLED);
-            message.channel.send("Repeating has been disabled!")
+            return message.channel.send("Stopped repeating current song!")
+        }
+    }
+    if (["queuerepeat", "queueloop", "qr", "ql"].includes(command)) {
+        let queue = distube.getQueue(message)
+        if(!queue) return message.channel.send("Nothing in queue!")
+        let repeatMode = distube.setRepeatMode(message, 2)
+        if(repeatMode == 1) {
+            return message.channel.send("Repeating current queue!")
+        }
+        else {
+            return message.channel.send("Stopped repeating current queue!")
         }
     }
 
@@ -99,7 +104,7 @@ client.on("message", async (message) => {
         message.channel.send('Current queue:\n' + queue.songs.map((song, id) => {
             if(id == 0) return `**Currently playing**: ${song.name} - \`${song.formattedDuration}\``
             return `**${id}**. ${song.name} - \`${song.formattedDuration}\``
-        }).slice(0, 10).join("\n"));
+        }).join("\n"));
     }
 
     if ([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`].includes(command)) {
