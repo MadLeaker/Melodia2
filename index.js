@@ -53,7 +53,7 @@ client.on("message", async (message) => {
         let queue = distube.getQueue(message)
         if(!queue) return message.channel.send("Nothing in queue!")
         let repeatMode = distube.setRepeatMode(message, 2)
-        if(repeatMode == 1) {
+        if(repeatMode == 2) {
             return message.channel.send("Repeating current queue!")
         }
         else {
