@@ -12,7 +12,7 @@ const Discord = require('discord.js'),
     };
 
 // Create a new DisTube
-const distube = new DisTube(client, {emitNewSongOnly: true, searchSongs: true, leaveOnStop: false, leaveOnFinish: false})
+const distube = new DisTube(client, {emitNewSongOnly: true, searchSongs: true, leaveOnStop: false, leaveOnFinish: false, leaveOnEmpty: true})
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -139,9 +139,8 @@ client.on("message", async (message) => {
     }
     if(command == "leave") {
        let queue = distube.getQueue(message)
-       if(!queue.voice) return message.channel.send("Not in a voice channel!")
-       queue.voice.leave()
-       queue.delete()
+       if(!queue.dispatcher) return message.channel.send("Not in a voice channel!")
+       queue.dispatcher.end()
        message.channel.send("Successfully left the voice channel!")
     }
 });
