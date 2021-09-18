@@ -19,7 +19,7 @@ distube.options.emitNewSongOnly = true
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    client.
+    client.user.setActivity("Music!", {type: "PLAYING"})
 });
 
 client.on("messageCreate", async (message) => {
