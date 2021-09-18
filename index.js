@@ -176,7 +176,6 @@ distube
         message.channel.send("No songs have been found!")
     })
     .on("searchDone", (msg, answer) => {
-        msg.channel.send(`Adding ${song.name} - \`${song.formattedDuration}\` to the queue by ${song.user}`)
     })
     .on("searchInvalidAnswer", (message) => {
     })
