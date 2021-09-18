@@ -97,9 +97,10 @@ client.on("messageCreate", async (message) => {
     if (["q", "queue"].includes(command)) {
         let queue = distube.getQueue(message);
         if(!queue) return message.channel.send("No songs in queue!")
-        message.channel.send('Current queue:\n' + queue.songs.map((song, id) =>
-            `**${id + 1}**. ${song.name} - \`${song.formattedDuration}\``
-        ).slice(0, 10).join("\n"));
+        message.channel.send('Current queue:\n' + queue.songs.map((song, id) => {
+            if(id == 0) return `**Currently playing**: ${song.name} - \`${song.formattedDuration}\``
+            return `**${id}**. ${song.name} - \`${song.formattedDuration}\``
+        }).slice(0, 10).join("\n"));
     }
 
     if ([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`].includes(command)) {
@@ -119,21 +120,27 @@ client.on("messageCreate", async (message) => {
         queue.songs.splice(1, queue.songs.length - 1)
         message.channel.send("Cleared the queue!")
     }
-    if(["r", "remove"].includes(command)) {
+    if(["d", "delete"].includes(command)) {
         let queue = distube.getQueue(message)
         if(!queue) return message.channel.send("No songs in the queue!");
         let index = args[0]
-        if(index < 0 || index > queue.songs.length) {
+        let songsClone = [...queue.songs]
+        songsClone.shift()
+        if(index < 1 || index > songsClone.length) {
             return message.channel.send("Song not found!")
         }
-        let deleted = queue.songs.splice(args[0], 1)[0]
-        message.channel.send(`Deleted the song: \`${deleted.name} - ${deleted.formattedDuration}\' from the queue!`);
+        let deleted = songsClone.splice(index-1, 1)[0]
+        queue.songs = [queue.songs[0],...songsClone]
+        if(deleted) return message.channel.send(`Deleted the song: \`${deleted.name} - ${deleted.formattedDuration}\' from the queue!`);
+        
+        message.channel.send("Error occured!");
     }
     if(command == "leave") {
        let queue = distube.getQueue(message)
        if(!queue) return message.channel.send("Not in a voice channel!")
        queue.voice.leave()
        queue.delete()
+       message.channel.send("Successfully left the voice channel!")
     }
 });
 
