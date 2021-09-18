@@ -115,7 +115,7 @@ client.on("messageCreate", async (message) => {
         distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }
-    if(command == "clearQueue") {
+    if(command == "qc") {
         let queue = distube.getQueue(message)
         if(!queue) return message.channel.send("No songs in the queue!");
         queue.songs.splice(1, queue.songs.length - 1)
