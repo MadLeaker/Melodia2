@@ -1,4 +1,5 @@
 const { RepeatMode, default: dist } = require("distube");
+const DB = require("quick.db")
 
 // DisTube example bot, definitions, properties and events details in the Documentation page.
 require("dotenv").config()
@@ -14,21 +15,23 @@ const Discord = require('discord.js'),
 const distube = new DisTube.default(client)
 distube.options.searchSongs = 5
 distube.options.leaveOnStop = false
+distube.options.emitNewSongOnly = true
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on("messageCreate", async (message) => {
+    let prefix = DB.get(message.guild.id) || config.prefix
     if (message.author.bot) return;
-    if (!message.content.startsWith(config.prefix)) return;
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+    if (!message.content.startsWith(prefix)) return;
+    const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
     if (["play", "p"].includes(command))
         distube.play(message, args.join(" "));
 
-    if (["repeat", "loop"].includes(command)) {
+    if (["repeat", "loop", "r", "l"].includes(command)) {
         let type = args[0]
         let queue = distube.getQueue(message)
         if(!queue) {
@@ -103,6 +106,12 @@ client.on("messageCreate", async (message) => {
         distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }
+    if(command == "clearQueue") {
+        let queue = distube.getQueue(message)
+        if(!queue) return message.channel.send("No songs in the queue!");
+        queue.songs.splice(1, queue.songs.length - 1)
+        message.channel.send("Cleared the queue!")
+    }
     if(["r", "remove"].includes(command)) {
         let queue = distube.getQueue(message)
         if(!queue) return message.channel.send("No songs in the queue!");
@@ -111,10 +120,8 @@ client.on("messageCreate", async (message) => {
             return message.channel.send("Song not found!")
         }
         let deleted = queue.songs.splice(args[0], 1)[0]
-        message.channel.send(`Deleted the song: ${deleted.name} - ${deleted.formattedDuration} from the queue!`);
+        message.channel.send(`Deleted the song: \`${deleted.name} - ${deleted.formattedDuration}\' from the queue!`);
     }
-
-
     if(command == "leave") {
        let queue = distube.getQueue(message)
        if(!queue) return message.channel.send("Not in a voice channel!")
