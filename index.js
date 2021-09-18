@@ -36,8 +36,6 @@ client.on("message", async (message) => {
     if (["play", "p"].includes(command))
     {
         distube.play(message, args.join(" "));
-        let queue = distube.getQueue(message)
-        queue.autoplay = false
     }
 
     if (["repeat", "loop", "r", "l"].includes(command)) {
@@ -154,6 +152,7 @@ const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filt
 // DisTube event listeners, more in the documentation page
 distube
     .on("playSong", (msg, queue, song) => {
+        queue.autoplay = false
         if(song) {
             let msg1 = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
             msg.channel.send(msg1)
