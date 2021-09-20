@@ -1,4 +1,5 @@
 const Command = require("../structs/Command")
+
 module.exports = new Command({
     name: "leave",
     aliases: [],
@@ -8,6 +9,7 @@ module.exports = new Command({
         let queue = client.distube.getQueue(message)
        if(!queue.dispatcher) return message.channel.send("Not in a voice channel!")
        queue.dispatcher.end()
+        message.guild.me.voice.channel.leave()
        message.channel.send("Successfully left the voice channel!")
     }
 })
