@@ -5,7 +5,7 @@ const Distube = require("distube")
 const fs = require("fs")
 const DB = require("quick.db")
 const config = {
-    prefix: process.env.PREFIX || "[]",
+    prefix: process.env.PREFIX || "!",
     token: process.env.TOKEN || "Bitch no token here!"
 };
 
@@ -84,6 +84,7 @@ class MelodiaClient extends Client {
             this.commands.set(command.name, command)
             console.log(`Init command ${command.name}`)
         }
+        console.log("The prefix is: " + config.prefix)
     }
     
 }
