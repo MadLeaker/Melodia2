@@ -9,7 +9,6 @@ const {MessageEmbed, Message} = require("discord.js")
  */
 
 async function makeEmbed(results,index, prevIndex, message, authorId, callback) {
-    message.reactions.removeAll()
     const embed = new MessageEmbed()
     embed.setTitle(`[${index+1}/${results.length}] :`+results[index].title)
     embed.setThumbnail(results[index].bestThumbnail.url)
@@ -40,6 +39,7 @@ async function makeEmbed(results,index, prevIndex, message, authorId, callback) 
     else {
         reactions.push("❌")
     }
+    await msg.reactions.removeAll()
     for(let i = 0; i < reactions.length; i++) {
         await msg.react(reactions[i])
     }
@@ -67,9 +67,9 @@ module.exports = new Command({
     async run(msg, args, client) {
         let onlyVideos = await (await Search.getFilters(args.join(" "))).get("Type").get("Video")
         let results = await Search(onlyVideos.url, {limit: 10})
-        await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, msg) => {
+        await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, msg1) => {
             client.distube.play(msg, results.items[index].url)
-            msg.delete()
+            msg1.delete()
         })
     }
 })
