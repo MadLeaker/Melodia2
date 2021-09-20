@@ -8,4 +8,4 @@ const Discord = require('discord.js'),
     DisTube = require('distube'),
     client = new MelodiaClient()
 
-client.login(process.env.token);
+client.login(process.env.TOKEN);
