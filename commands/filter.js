@@ -13,7 +13,6 @@ module.exports = new Command({
         }
         else {
             message.channel.send("This filter doesn't exist!");
-
         }
         
     }

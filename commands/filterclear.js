@@ -7,7 +7,7 @@ module.exports = new Command({
     dmOnly: false,
     async run(message, args, client) {
         let queue = client.distube.getQueue(message)
-        if(!queue || !queue.filters || queue.filters.length == 0) return message.channel.send("No filters in the queue!");
+        if(!queue || !queue.filter || queue.filter == "") return message.channel.send("No filters in the queue!");
         client.distube.setFilter(message, false);
         message.channel.send("Cleared all filters");
     }

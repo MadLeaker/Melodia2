@@ -4,6 +4,7 @@ const Command = require("./Command")
 const Distube = require("distube")
 const fs = require("fs")
 const DB = require("quick.db")
+const disbut = require("discord-buttons")
 const config = {
     prefix: process.env.PREFIX || "!",
     token: process.env.TOKEN || "Bitch no token here!"
@@ -13,6 +14,7 @@ const config = {
 class MelodiaClient extends Client {
     constructor() {
         super()
+        this.disbut = disbut(this)
         this.distube = new Distube(this, {emitNewSongOnly: true, leaveOnEmpty: true})
         this.on("ready", this.onReady)
         this.on("message", this.onMessage)

@@ -1,6 +1,7 @@
 const Command = require("../structs/Command");
 const Search = require("ytsr")
 const {MessageEmbed, Message} = require("discord.js")
+const {MessageButton, MessageActionRow, MessageButtonStyles} = require("discord-buttons")
 /**
  * 
  * @param {Array} results 
@@ -17,43 +18,38 @@ async function makeEmbed(results,index, prevIndex, message, authorId, callback) 
     embed.addField("Views", results[index].views)
     embed.addField("Uploaded by", results[index].author.name)
     let msg;
-    let reactions = [
-        "✅",
-        ]
+    const row = new MessageActionRow()
+    row.addComponent(new MessageButton().setID("play").setLabel("Play").setStyle(3))
+    row.addComponent(new MessageButton().setID("next").setLabel("Next").setStyle(1))
     if(index == 0) {
+        row.components.unshift(new MessageButton().setID("noPrev").setLabel("X").setStyle(4))
         if(prevIndex == 0) {
-            msg = await message.channel.send(`**Choose the video you would like to play**`, {embed: embed})
+            msg = await message.channel.send(`**Choose the video you would like to play**`, {embed: embed, components: [row]})
         }
         else {
-            msg = await message.edit(`**Choose the video you would like to play**`, {embed: embed})
+            msg = await message.edit(`**Choose the video you would like to play**`, {embed: embed, components: [row]})
         }
-        reactions.unshift("❌")
     }
     else {
-        msg = await message.edit(`**Choose the video you would like to play**`, {embed: embed})
-        reactions.unshift("⬅️")
+        row.components.unshift(new MessageButton().setID("prev").setLabel("Previous").setStyle(1))
+        msg = await message.edit(`**Choose the video you would like to play**`, {embed: embed, components: [row]})
     }
-    if(index < results.length - 1) {
-        reactions.push("➡️")
+    const filter = (button) => {
+        if(button.clicker.id == authorId) return true
     }
-    else {
-        reactions.push("❌")
-    }
-    await msg.reactions.removeAll()
-    for(let i = 0; i < reactions.length; i++) {
-        await msg.react(reactions[i])
-    }
-    let collected = await msg.awaitReactions((r,u) => reactions.includes(r.emoji.name) && !u.bot && u.id == authorId, {max: 1, users: 1, time: 60000, errors: ["time"]})
+    let collected = await msg.awaitButtons(filter, {maxButtons: 1, time: 60000})
     let c = collected.first()
-        if(c.emoji.name == "⬅️" && index > 0) {
-            await makeEmbed(results, index-1, index, msg, authorId, callback)
+        if(c.id == "prev" && index > 0) {
+            await c.reply.defer()
+            await makeEmbed(results, index-1, index, c.message, authorId, callback)
         }
-        else if(c.emoji.name == "➡️") {
-
-            await makeEmbed(results, index+1, index, msg,authorId, callback)
+        else if(c.id == "next") {
+            await c.reply.defer()
+            await makeEmbed(results, index+1, index, c.message,authorId, callback)
         }
-        else if(c.emoji.name == "✅") {
-            callback(index, msg) 
+        else if(c.id == "play") {
+            await c.reply.defer()
+            callback(index, c) 
         }
 }
 
@@ -67,9 +63,9 @@ module.exports = new Command({
     async run(msg, args, client) {
         let onlyVideos = await (await Search.getFilters(args.join(" "))).get("Type").get("Video")
         let results = await Search(onlyVideos.url, {limit: 10})
-        await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, msg1) => {
+        await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, c) => {
             client.distube.play(msg, results.items[index].url)
-            msg1.delete()
+            c.message.delete()
         })
     }
 })
