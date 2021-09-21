@@ -2,7 +2,7 @@ const Command = require("../structs/Command");
 const DB = require("quick.db")
 module.exports = new Command({
     name: "clear",
-    aliases: [],
+    aliases: ["c"],
     description: "Cleans the filters",
     dmOnly: false,
     async run(message, args, client) {

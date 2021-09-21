@@ -56,6 +56,7 @@ class MelodiaClient extends Client {
      * @param {Discord.Message} message
      */
     onMessage(message) {
+        
         let prefix = DB.get(message.guild.id) || config.prefix
         if(!message.content.startsWith(prefix) || message.author.bot) return
         const args = message.content.substring(prefix.length).split(/ +/)
