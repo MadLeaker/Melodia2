@@ -61,11 +61,18 @@ module.exports = new Command({
     ],
     description: "Plays a song / adds to queue if a song is playing!",
     async run(msg, args, client) {
-        let onlyVideos = await (await Search.getFilters(args.join(" "))).get("Type").get("Video")
-        let results = await Search(onlyVideos.url, {limit: 10})
-        await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, c) => {
-            client.distube.play(msg, results.items[index].url)
-            c.message.delete()
-        })
+        if(!args[0].includes("https://www.youtube.com/watch?") && !args[0].includes("https://youtu.be/")) {
+            let onlyVideos = await (await Search.getFilters(args.join(" "))).get("Type").get("Video")
+            let results = await Search(onlyVideos.url, {limit: 10})
+        
+            await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, c) => {
+                client.distube.play(msg, results.items[index].url)
+                c.message.delete()
+            })
+        }
+        else {
+            client.distube.play(msg, args[0])
+        }
+        
     }
 })
