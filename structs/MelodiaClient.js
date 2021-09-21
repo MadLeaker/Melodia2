@@ -1,5 +1,5 @@
 const Discord = require("discord.js")
-const {Client, Collection} = Discord
+const {Client, Collection, MessageEmbed} = Discord
 const Command = require("./Command")
 const Distube = require("distube")
 const fs = require("fs")
@@ -22,21 +22,42 @@ class MelodiaClient extends Client {
          * @type {Discord.Collection<string, Command>}
          */
          this.commands = new Collection()
+         this.messages = new Collection()
          this.distube
-    .on("playSong", (msg, queue, song) => {
+    .on("playSong", async (msg, queue, song) => {
+        let message = this.messages.get(msg.author.id).find(x => x.id == song.id)
+
         queue.autoplay = false
-        if(song) {
-            let msg1 = `Playing \`${song.name}\` - \`${song.formattedDuration}\``
-            msg.channel.send(msg1)
-        }
-        else {
-            msg.channel.send("Nothing in queue!")
-        }
-        
+        const embed = new MessageEmbed()
+        embed.setTitle(`Playing ${song.name}`)
+        embed.setThumbnail(song.thumbnail)
+        embed.addField("Author", song.info.videoDetails.author.name)
+        embed.addField("ID", song.id)
+        embed.addField("Requested by", song.user.tag)
+        embed.addField("Views", song.views)
+        embed.addField("Duration", song.formattedDuration)
+        if(message) await message.message.edit({content: "",embed: embed})
+        else
+            msg.channel.send({embed: embed})
+        message = undefined
     })
-    .on("addSong", (msg, queue, song) => msg.channel.send(
-        `Added \`${song.name} - ${song.formattedDuration}\` to the queue by ${song.user}`
-    ))
+    .on("addSong", async (msg, queue, song) => {
+        let message = this.messages.get(msg.author.id).find(x => x.id == song.id)
+        console.log(message)
+        const embed = new MessageEmbed()
+        embed.setTitle(`Added ${song.name} to the queue`)
+        embed.setThumbnail(song.thumbnail)
+        embed.addField("Author", song.info.videoDetails.author.name)
+        embed.addField("ID", song.id)
+        embed.addField("Requested by", song.user.tag)
+        embed.addField("Place", queue.songs.length)
+        embed.addField("Views", song.views)
+        embed.addField("Duration", song.formattedDuration)
+        if(message) await message.message.edit({content: "", embed: embed})
+        else
+            msg.channel.send({embed: embed})
+        message = undefined
+    })
     .on("addList", (msg, queue, playlist) => msg.channel.send(
         `Added \`${playlist.name}\` playlist (${playlist.songs.length} songs) to queue\n${status(queue)}`
     ))
@@ -46,7 +67,7 @@ class MelodiaClient extends Client {
     })
     .on("error", (msg, e) => {
         console.error(e)
-	    msg.channel.send(`${e.name}`) // Discord limits 2000 characters in a message
+	    msg.channel.send(`${e.name}: ${e.message}`) // Discord limits 2000 characters in a message
     })
     
     }

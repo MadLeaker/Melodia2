@@ -1,5 +1,6 @@
 const Command = require("../structs/Command");
 const Search = require("ytsr")
+const EventEmitter = require("events")
 const {MessageEmbed, Message} = require("discord.js")
 const {MessageButton, MessageActionRow, MessageButtonStyles} = require("discord-buttons")
 /**
@@ -9,7 +10,10 @@ const {MessageButton, MessageActionRow, MessageButtonStyles} = require("discord-
  * @param {Message} message 
  */
 
-async function makeEmbed(results,index, prevIndex, message, authorId, callback) {
+const emitter = new EventEmitter()
+
+
+async function makeEmbed(results,index, prevIndex, message, authorId, queueStatus, callback) {
     const embed = new MessageEmbed()
     embed.setTitle(`[${index+1}/${results.length}] :`+results[index].title)
     embed.setThumbnail(results[index].bestThumbnail.url)
@@ -19,7 +23,7 @@ async function makeEmbed(results,index, prevIndex, message, authorId, callback) 
     embed.addField("Uploaded by", results[index].author.name)
     let msg;
     const row = new MessageActionRow()
-    row.addComponent(new MessageButton().setID("play").setLabel("Play").setStyle(3))
+    row.addComponent(new MessageButton().setID("play").setLabel(queueStatus ? "Add to queue" : "Play").setStyle(3))
     row.addComponent(new MessageButton().setID("next").setLabel("Next").setStyle(1))
     if(index == 0) {
         row.components.unshift(new MessageButton().setID("noPrev").setLabel("X").setStyle(4))
@@ -38,20 +42,22 @@ async function makeEmbed(results,index, prevIndex, message, authorId, callback) 
         if(button.clicker.id == authorId) return true
     }
     let collected = await msg.awaitButtons(filter, {maxButtons: 1, time: 60000})
+    
     let c = collected.first()
         if(c.id == "prev" && index > 0) {
             await c.reply.defer()
-            await makeEmbed(results, index-1, index, c.message, authorId, callback)
+            await makeEmbed(results, index-1, index, c.message, authorId, queueStatus, callback)
         }
         else if(c.id == "next") {
             await c.reply.defer()
-            await makeEmbed(results, index+1, index, c.message,authorId, callback)
+            await makeEmbed(results, index+1, index, c.message,authorId,queueStatus, callback)
         }
         else if(c.id == "play") {
             await c.reply.defer()
             callback(index, c) 
         }
 }
+
 
 
 module.exports = new Command({
@@ -61,16 +67,39 @@ module.exports = new Command({
     ],
     description: "Plays a song / adds to queue if a song is playing!",
     async run(msg, args, client) {
+        if((!msg.guild.me.voice.channel && !msg.member.voice.channel) || (msg.guild.me.voice.channel && msg.guild.me.voice.channel != msg.member.voice.channel)) return msg.channel.send("Not in a voice channel! / Not in the same voice channel!")
+        let queue = client.distube.getQueue(msg)
+
         if(!args[0].includes("https://www.youtube.com/watch?") && !args[0].includes("https://youtu.be/")) {
             let onlyVideos = await (await Search.getFilters(args.join(" "))).get("Type").get("Video")
             let results = await Search(onlyVideos.url, {limit: 10})
-        
-            await makeEmbed(results.items, 0, 0, msg,msg.author.id, async (index, c) => {
+            await makeEmbed(results.items, 0, 0, msg,msg.author.id, queue !== undefined, async (index, c) => {
                 client.distube.play(msg, results.items[index].url)
                 c.message.delete()
+                let newMsg = await msg.channel.send("Processing...")
+                let msgs = client.messages.get(msg.author.id)
+                console.log(results.items[index].id)
+                if(msgs) {
+                    msgs.push({id: results.items[index].id, message: newMsg})
+                    client.messages.set(msg.author.id, msgs)
+                }
+                else {
+                    client.messages.set(msg.author.id, [{id: results.items[index].id, message: newMsg}])
+                }
             })
         }
         else {
+            let newMsg = await msg.channel.send("Processing...")
+            let msgs = client.messages.get(msg.author.id)
+            let vidId = args[0].slice(args[0].length-11, args[0].length)
+            console.log(vidId)
+            if(msgs) {
+                    msgs.push({id: vidId, message: newMsg})
+                    client.messages.set(msg.author.id, msgs)
+            }
+            else {
+                client.messages.set(msg.author.id, [{id: vidId, message: newMsg}])
+            }
             client.distube.play(msg, args[0])
         }
         
