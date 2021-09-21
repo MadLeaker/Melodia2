@@ -62,7 +62,7 @@ class MelodiaClient extends Client {
             if(x.name == name) return x
             if(x.aliases && x.aliases.length > 0 && x.aliases.includes(name)) return x
         })
-        if(!command) return message.reply(`${name} isn't a command!`)
+        if(!command) return message.channel.send(`\`${name}\` isn't a command!`)
         if(command.dmOnly) {
             if(message.channel.type === "dm") {
                 command.run(message, args, this)
