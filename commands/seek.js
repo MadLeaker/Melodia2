@@ -26,7 +26,7 @@ module.exports = new Command({
         if(args[0] < 0 || args[0] > curSong.duration) {
             return message.channel.send("Can't seek longer than the duration of the song or shorter than 0!")
         }
-        client.distube.seek(message, args[0])
+        client.distube.seek(message, Number(args[0])*1000)
         message.channel.send("Successfully seeked to: " + toHHMMSS(args[0]))
     }
 })
