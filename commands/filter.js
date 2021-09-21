@@ -6,7 +6,7 @@ module.exports = new Command({
     description: "Sets a filter to the queue",
     dmOnly: false,
     async run(message, args, client) {
-        let filter = client.distube.setFilter(message, command);
+        let filter = client.distube.setFilter(message, args[0]);
         message.channel.send("Current queue filter: " + (filter || "Off"));
     }
 })
