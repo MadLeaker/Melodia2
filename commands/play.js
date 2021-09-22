@@ -28,9 +28,9 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     const embed = new MessageEmbed()
     embed.setTitle(`[${index+1}/${results.length}] :`+results[index].title)
     embed.setThumbnail(results[index].bestThumbnail.url)
-    embed.addField("Youtube ID", results[index].id)
+    embed.addField("Youtube URL", "https://youtu.be/"+results[index].id)
     embed.addField("Length", results[index].duration)
-    embed.addField("Views", results[index].views)
+    embed.addField("Views", results[index].views.toLocaleString())
     embed.addField("Uploaded by", results[index].author.name)
     /**
      * @type {Message}
