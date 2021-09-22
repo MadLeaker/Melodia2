@@ -60,8 +60,8 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     }
     let hasPressed = false
     try {
-        let c1 = msg.channel.createMessageCollector(msgFilter, {max: 1, time: 10000, errors: ["time"]})
-        let c2 = msg.createButtonCollector(filter, {maxButtons: 1, time: 10000, errors: ["time"]})
+        let c1 = msg.channel.createMessageCollector(msgFilter, {max: 1, time: 60000, errors: ["time"]})
+        let c2 = msg.createButtonCollector(filter, {maxButtons: 1, time: 60000, errors: ["time"]})
         c1.once("collect", async (c, r) => {
             hasPressed = true
             if(c) {
