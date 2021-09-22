@@ -40,6 +40,8 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     row.addComponent(new MessageButton().setID("play").setLabel(queueStatus ? "Add to queue" : "Play").setStyle(3))
     if(index == 0) {
         row.components.unshift(new MessageButton().setID("noPrev").setLabel("X").setStyle(4))
+        row.addComponent(new MessageButton().setID("next").setLabel("Next").setStyle(1))
+
         if(prevIndex == 0) {
             msg = await message.channel.send(`**Choose the video you would like to play**\n**After a minute of inactivity / if you enter anything else, The search will be cancelled!**`, {embed: embed, components: [row]})
         }
