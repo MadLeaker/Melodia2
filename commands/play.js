@@ -42,15 +42,15 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     if(index == 0) {
         row.components.unshift(new MessageButton().setID("noPrev").setLabel("X").setStyle(4))
         if(prevIndex == 0) {
-            msg = await message.channel.send(`**Choose the video you would like to play**`, {embed: embed, components: [row]})
+            msg = await message.channel.send(`**Choose the video you would like to play**\n**After a minute of inactivity / if you enter anything else, The search will be cancelled!**`, {embed: embed, components: [row]})
         }
         else {
-            msg = await message.edit(`**Choose the video you would like to play**`, {embed: embed, components: [row]})
+            msg = await message.edit(`**Choose the video you would like to play**\n**After a minute of inactivity / if you enter anything else, The search will be cancelled!**`, {embed: embed, components: [row]})
         }
     }
     else {
         row.components.unshift(new MessageButton().setID("prev").setLabel("Previous").setStyle(1))
-        msg = await message.edit(`**Choose the video you would like to play**`, {embed: embed, components: [row]})
+        msg = await message.edit(`**Choose the video you would like to play**\n**After a minute of inactivity / if you enter anything else, The search will be cancelled!**`, {embed: embed, components: [row]})
     }
     const filter = (button) => {
         if(button.clicker.id == authorId) return true
