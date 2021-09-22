@@ -38,7 +38,6 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     let msg;
     const row = new MessageActionRow()
     row.addComponent(new MessageButton().setID("play").setLabel(queueStatus ? "Add to queue" : "Play").setStyle(3))
-    row.addComponent(new MessageButton().setID("next").setLabel("Next").setStyle(1))
     if(index == 0) {
         row.components.unshift(new MessageButton().setID("noPrev").setLabel("X").setStyle(4))
         if(prevIndex == 0) {
@@ -49,6 +48,13 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
         }
     }
     else {
+        if(index == results.length - 1) {
+            row.addComponent(new MessageButton().setID("noNext").setLabel("X").setStyle(4))
+
+        }
+        else {
+            row.addComponent(new MessageButton().setID("next").setLabel("Next").setStyle(1))
+        }
         row.components.unshift(new MessageButton().setID("prev").setLabel("Previous").setStyle(1))
         msg = await message.edit(`**Choose the video you would like to play**\n**After a minute of inactivity / if you enter anything else, The search will be cancelled!**`, {embed: embed, components: [row]})
     }
