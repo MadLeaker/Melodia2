@@ -13,6 +13,17 @@ const {MessageButton, MessageActionRow, MessageButtonStyles} = require("discord-
 const emitter = new EventEmitter()
 
 
+/**
+ * 
+ * @param {*} results 
+ * @param {number} index 
+ * @param {number} prevIndex 
+ * @param {Message} message 
+ * @param {number} authorId 
+ * @param {boolean} queueStatus 
+ * @param {*} callback 
+ * @returns 
+ */
 async function makeEmbed(results,index, prevIndex, message, authorId, queueStatus, callback) {
     const embed = new MessageEmbed()
     embed.setTitle(`[${index+1}/${results.length}] :`+results[index].title)
@@ -21,6 +32,9 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     embed.addField("Length", results[index].duration)
     embed.addField("Views", results[index].views)
     embed.addField("Uploaded by", results[index].author.name)
+    /**
+     * @type {Message}
+     */
     let msg;
     const row = new MessageActionRow()
     row.addComponent(new MessageButton().setID("play").setLabel(queueStatus ? "Add to queue" : "Play").setStyle(3))
@@ -41,21 +55,54 @@ async function makeEmbed(results,index, prevIndex, message, authorId, queueStatu
     const filter = (button) => {
         if(button.clicker.id == authorId) return true
     }
-    let collected = await msg.awaitButtons(filter, {maxButtons: 1, time: 60000})
+    const msgFilter = (msg) => {
+        if(msg.author.id == authorId) return true
+    }
+    let hasPressed = false
+    try {
+        let c1 = msg.channel.createMessageCollector(msgFilter, {max: 1, time: 10000, errors: ["time"]})
+        let c2 = msg.createButtonCollector(filter, {maxButtons: 1, time: 10000, errors: ["time"]})
+        c1.once("collect", async (c, r) => {
+            hasPressed = true
+            if(c) {
+                c2.stop()
+                await msg.channel.send("Cancelled the search!")
+                await msg.delete()
+                c1.stop()
+                return
+            }
+        })
+        c2.once("collect", async (c) => {
+            hasPressed = true
+            if(c.id == "prev" && index > 0) {
+                await c.reply.defer()
+                await makeEmbed(results, index-1, index, c.message, authorId, queueStatus, callback)
+            }
+            else if(c.id == "next") {
+                await c.reply.defer()
+                await makeEmbed(results, index+1, index, c.message,authorId,queueStatus, callback)
+            }
+            else if(c.id == "play") {
+                await c.reply.defer()
+                callback(index, c) 
+            }
+            c2.stop()
+            c1.stop()
+        })
+        c2.once("end", async (c) => {
+            if(!hasPressed) {
+                c1.stop()
+                await msg.channel.send("Due to inactivity, The search has been cancelled!")
+                await msg.delete()
+            } 
+        })
+    }
+    catch(e) {
+        console.log(e)
+        await msg.channel.send("Due to inactivity, the message has been deleted!")
+        await msg.delete()
+    }
     
-    let c = collected.first()
-        if(c.id == "prev" && index > 0) {
-            await c.reply.defer()
-            await makeEmbed(results, index-1, index, c.message, authorId, queueStatus, callback)
-        }
-        else if(c.id == "next") {
-            await c.reply.defer()
-            await makeEmbed(results, index+1, index, c.message,authorId,queueStatus, callback)
-        }
-        else if(c.id == "play") {
-            await c.reply.defer()
-            callback(index, c) 
-        }
 }
 
 
@@ -78,7 +125,6 @@ module.exports = new Command({
                 c.message.delete()
                 let newMsg = await msg.channel.send("Processing...")
                 let msgs = client.messages.get(msg.author.id)
-                console.log(results.items[index].id)
                 if(msgs) {
                     msgs.push({id: results.items[index].id, message: newMsg})
                     client.messages.set(msg.author.id, msgs)
@@ -92,7 +138,6 @@ module.exports = new Command({
             let newMsg = await msg.channel.send("Processing...")
             let msgs = client.messages.get(msg.author.id)
             let vidId = args[0].slice(args[0].length-11, args[0].length)
-            console.log(vidId)
             if(msgs) {
                     msgs.push({id: vidId, message: newMsg})
                     client.messages.set(msg.author.id, msgs)
