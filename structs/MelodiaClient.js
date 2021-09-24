@@ -43,7 +43,6 @@ class MelodiaClient extends Client {
     })
     .on("addSong", async (msg, queue, song) => {
         let message = this.messages.get(msg.author.id).find(x => x.id == song.id)
-        console.log(message)
         const embed = new MessageEmbed()
         embed.setTitle(`Added ${song.name} to the queue`)
         embed.setThumbnail(song.thumbnail)
