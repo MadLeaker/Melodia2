@@ -69,7 +69,6 @@ class MelodiaClient extends Client {
         console.error(e)
 	    msg.channel.send(`${e.name}: ${e.message}`) // Discord limits 2000 characters in a message
     })
-    
     }
     status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
     /**
