@@ -49,7 +49,7 @@ class MelodiaClient extends Client {
         embed.addField("Author", song.info.videoDetails.author.name, true)
         embed.addField("URL", "https://youtu.be/"+song.id, true)
         embed.addField("Requested by", song.user.tag, true)
-        embed.addField("Place", queue.songs.length, true)
+        embed.addField("Place", queue.songs.length-1, true)
         embed.addField("Views", song.views.toLocaleString(), true)
         embed.addField("Duration", song.formattedDuration, true)
         if(message) await message.message.edit({content: "", embed: embed})

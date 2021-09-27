@@ -94,6 +94,7 @@ async function makeEmbed(client,index, message, authorId) {
         })
         c2.once("end", async (c) => {
             if(!hasPressed) {
+                
                 await msg.channel.send("Due to inactivity, The message has been deleted!")
                 if(msg) {
                     await msg.delete()

@@ -126,10 +126,12 @@ module.exports = new Command({
     async run(msg, args, client) {
         if((!msg.guild.me.voice.channel && !msg.member.voice.channel) || (msg.guild.me.voice.channel && msg.guild.me.voice.channel != msg.member.voice.channel)) return msg.channel.send("Not in a voice channel! / Not in the same voice channel!")
         let queue = client.distube.getQueue(msg)
-
+    
         if(!args[0].includes("https://www.youtube.com/watch?") && !args[0].includes("https://youtu.be/")) {
             msg.channel.send("Searching...").then(async m1 => {
-                let searchedFilters = await Search.getFilters(args.join(" "))
+                let searchWords = args.join(" ")
+                if(!searchWords) return m1.edit("Search failed as there are no search words!")
+                let searchedFilters = await Search.getFilters()
                 let onlyVideos = searchedFilters.get("Type").get("Video")
                 let results = await Search(onlyVideos.url, {limit: 10})
                 await makeEmbed(results.items, 0, m1,msg.author.id, queue !== undefined, async (index, c) => {
