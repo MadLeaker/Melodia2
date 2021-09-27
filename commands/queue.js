@@ -37,6 +37,7 @@ async function makeEmbed(client,index, message, authorId) {
     embed.addField("Length", queue.songs[index].formattedDuration)
     embed.addField("Views", queue.songs[index].views.toLocaleString())
     embed.addField("Uploaded by", queue.songs[index].info.videoDetails.author.name)
+    embed.addField("Effect", queue.filter ? queue.filter : "None")
     /**
      * @type {Message}
      */
@@ -61,6 +62,7 @@ async function makeEmbed(client,index, message, authorId) {
         }
         embed.addField("Time remaining", getYoutubeLikeToDisplay(timeUntil))
         embed.setTitle(`${index+1}/${queue.songs.length}: ${queue.songs[index].name}`)
+        row.addComponent(new MessageButton().setID("remove").setLabel("Remove").setStyle(4))
         row.components.unshift(new MessageButton().setID("prev").setLabel("Previous").setStyle(1))
         msg = await message.edit(`**Here is the current queue**`, {embed: embed, components: [row]})
     }
@@ -89,6 +91,12 @@ async function makeEmbed(client,index, message, authorId) {
             else if(c.id == "next") {
                 await c.reply.defer()
                 await makeEmbed(client, index+1, c.message,authorId)
+            }
+            else if(c.id == "remove") {
+                let deleted = queue.songs.splice(index, 1)[0]
+                await c.message.edit({components: []})
+                await c.reply.send(`Removed \`${deleted.name}\` from the queue!`)
+                await makeEmbed(client, index-1, c.message, authorId)
             }
             c2.stop()
         })

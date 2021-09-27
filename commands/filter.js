@@ -18,18 +18,18 @@ const ffmpegFilters = {
     earwax: "earwax",
 }
 module.exports = new Command({
-    name: "filter",
-    aliases: ["f"],
+    name: "effect",
+    aliases: ["e"],
     description: "Sets a filter to the queue",
     dmOnly: false,
     async run(message, args, client) {
         let names = Object.keys(ffmpegFilters)
         if(names.includes(args[0])) {
             let filter = client.distube.setFilter(message, args[0]);
-            message.channel.send(`Current queue filter: \`${(filter || "Off")}\``);
+            message.channel.send(`Current queue effect: \`${(filter || "Off")}\``);
         }
         else {
-            message.channel.send(`This filter doesn't exist!\nThe current available filters: \`${names.join(", ")}\``);
+            message.channel.send(`This effect doesn't exist!\nThe current available effects: \`${names.join(", ")}\``);
         }
         
     }
