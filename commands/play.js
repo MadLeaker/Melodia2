@@ -130,7 +130,7 @@ module.exports = new Command({
         if(!args[0] || args.join(" ").length == 0) return msg.channel.send("Play failed as there is no search words / URL!")
         if(!args[0].includes("https://www.youtube.com/watch?") && !args[0].includes("https://youtu.be/")) {
             msg.channel.send("Searching...").then(async m1 => {
-                let searchedFilters = await Search.getFilters()
+                let searchedFilters = await Search.getFilters(args.join(" "))
                 let onlyVideos = searchedFilters.get("Type").get("Video")
                 let results = await Search(onlyVideos.url, {limit: 10})
                 await makeEmbed(results.items, 0, m1,msg.author.id, queue !== undefined, async (index, c) => {
