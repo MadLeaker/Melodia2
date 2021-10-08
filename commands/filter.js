@@ -13,6 +13,7 @@ module.exports = new Command({
         let moreNames = Object.keys(client.effects)
         let combined = [...names, ...moreNames]
         if(names.includes(args[0])) {
+            
             let filter = client.distube.setFilter(message, args[0]);
             message.channel.send(`Current queue effect: \`${(filter || "Off")}\``);
         }
