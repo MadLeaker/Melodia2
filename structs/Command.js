@@ -13,7 +13,7 @@ function RunFunction(message, args, client) {
 
 class Command {
     /**
-     * @typedef {{name: string, description: string, run: RunFunction, dmOnly: boolean, aliases?: string[]}} CommandOptions
+     * @typedef {{name: string, description: string, run: RunFunction, dmOnly: boolean, aliases?: string[], worksInMaintenance?: boolean}} CommandOptions
      * @param {CommandOptions} opts 
      */
     constructor(opts) {
@@ -22,6 +22,7 @@ class Command {
         this.run = opts.run
         this.dmOnly = opts.dmOnly
         this.aliases = opts.aliases
+        this.worksInMaintenance = opts.worksInMaintenance
     }
 }
 

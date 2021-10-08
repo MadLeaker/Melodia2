@@ -10,12 +10,61 @@ const config = {
     token: process.env.TOKEN || "Bitch no token here!"
 };
 
+const bass = (g) => `bass=g=${g}:f=110:w=0.3`;
+
+
+
+const FilterList = {
+    bassboost_low: bass(15),
+    bassboost2: bass(20),
+    bassboost_high: bass(30),
+    "8D": "apulsator=hz=0.09",
+    vaporwave2: "aresample=48000,asetrate=48000*0.8",
+    nightcore2: "aresample=48000,asetrate=48000*1.25",
+    phaser: "aphaser=in_gain=0.4",
+    tremolo: "tremolo",
+    vibrato: "vibrato=f=6.5",
+    reverse: "areverse",
+    treble: "treble=g=5",
+    normalizer: "dynaudnorm=g=101",
+    normalizer2: "acompressor",
+    pulsator: "apulsator=hz=1",
+    subboost: "asubboost",
+    karaoke: "stereotools=mlev=0.03",
+    mono: "pan=mono|c0=.5*c0+.5*c1",
+    mstlr: "stereotools=mode=ms>lr",
+    mstrr: "stereotools=mode=ms>rr",
+    compressor: "compand=points=-80/-105|-62/-80|-15.4/-15.4|0/-12|20/-7.6",
+    expander: "compand=attacks=0:points=-80/-169|-54/-80|-49.5/-64.6|-41.1/-41.1|-25.8/-15|-10.8/-4.5|0/0|20/8.3",
+    softlimiter: "compand=attacks=0:points=-80/-80|-12.4/-12.4|-6/-8|0/-6.8|20/-2.8",
+    chorus: "chorus=0.7:0.9:55:0.4:0.25:2",
+    chorus2d: "chorus=0.6:0.9:50|60:0.4|0.32:0.25|0.4:2|1.3",
+    chorus3d: "chorus=0.5:0.9:50|60|40:0.4|0.32|0.3:0.25|0.4|0.3:2|2.3|1.3",
+    fadein: "afade=t=in:ss=0:d=10",
+    dim: `afftfilt="'real=re * (1-clip((b/nb)*b,0,1))':imag='im * (1-clip((b/nb)*b,0,1))'"`,
+    earrape: "channelsplit,sidechaingate=level_in=64", "3d": "apulsator=hz=0.125",
+    bassboost: "bass=g=10,dynaudnorm=f=150:g=15",
+    echo: "aecho=0.8:0.9:1000:0.3",
+    flanger: "flanger",
+    gate: "agate",
+    haas: "haas",
+    karaoke: "stereotools=mlev=0.1",
+    nightcore: "asetrate=48000*1.25,aresample=48000,bass=g=5",
+    reverse: "areverse",
+    vaporwave: "asetrate=48000*0.8,aresample=48000,atempo=1.1",
+    mcompand: "mcompand",
+    phaser: "aphaser",
+    tremolo: "tremolo",
+    surround: "surround",
+    earwax: "earwax"}
+
 
 class MelodiaClient extends Client {
     constructor() {
         super()
         this.disbut = disbut(this)
-        this.distube = new Distube(this, {emitNewSongOnly: true, leaveOnEmpty: true})
+        this.effects = FilterList
+        this.distube = new Distube(this, {emitNewSongOnly: true, leaveOnEmpty: true, customFilters: FilterList})
         this.on("ready", this.onReady)
         this.on("message", this.onMessage)
         /**
@@ -24,8 +73,9 @@ class MelodiaClient extends Client {
          this.commands = new Collection()
          this.messages = new Collection()
          this.distube
+         
     .on("playSong", async (msg, queue, song) => {
-        let message = this.messages.get(msg.author.id).find(x => x.id == song.id)
+        let message = this.messages.get(msg.author.id).splice(0, 1)[0]
 
         queue.autoplay = false
         const embed = new MessageEmbed()
@@ -36,13 +86,25 @@ class MelodiaClient extends Client {
         embed.addField("Requested by", song.user.tag, true)
         embed.addField("Views", song.views.toLocaleString(), true)
         embed.addField("Duration", song.formattedDuration, true)
-        if(message) await message.message.edit({content: "",embed: embed})
+        embed.addField("Effect", queue.filter ? queue.filter : "None", true)
+        switch(queue.repeatMode) {
+            case 0:
+                embed.addField("Loop Mode", "Disabled")
+                break
+            case 1:
+                embed.addField("Loop Mode", `Looping ${queue.songs[0].name}`)
+                break
+            case 2:
+                embed.addField("Loop Mode", `Looping entire queue`)
+                break
+        }
+        if(message) await message.edit({content: "",embed: embed})
         else
             msg.channel.send({embed: embed})
-        message = undefined
+        
     })
     .on("addSong", async (msg, queue, song) => {
-        let message = this.messages.get(msg.author.id).find(x => x.id == song.id)
+        let message = this.messages.get(msg.author.id).splice(0, 1)[0]
         const embed = new MessageEmbed()
         embed.setTitle(`Added ${song.name} to the queue`)
         embed.setThumbnail(song.thumbnail)
@@ -52,10 +114,21 @@ class MelodiaClient extends Client {
         embed.addField("Place", queue.songs.length-1, true)
         embed.addField("Views", song.views.toLocaleString(), true)
         embed.addField("Duration", song.formattedDuration, true)
-        if(message) await message.message.edit({content: "", embed: embed})
+        embed.addField("Effect", queue.filter ? queue.filter : "None", true)
+        switch(queue.repeatMode) {
+            case 0:
+                embed.addField("Loop Mode", "Disabled")
+                break
+            case 1:
+                embed.addField("Loop Mode", `Looping ${queue.songs[0].name}`)
+                break
+            case 2:
+                embed.addField("Loop Mode", `Looping entire queue`)
+                break
+        }
+        if(message) await message.edit({content: "", embed: embed})
         else
             msg.channel.send({embed: embed})
-        message = undefined
     })
     .on("addList", (msg, queue, playlist) => msg.channel.send(
         `Added \`${playlist.name}\` playlist (${playlist.songs.length} songs) to queue\n${status(queue)}`

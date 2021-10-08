@@ -134,11 +134,11 @@ module.exports = new Command({
                     let newMsg = await msg.channel.send("Processing...")
                     let msgs = client.messages.get(msg.author.id)
                     if(msgs) {
-                        msgs.push({id: results.items[index].id, message: newMsg})
+                        msgs.push(newMsg)
                         client.messages.set(msg.author.id, msgs)
                     }
                     else {
-                        client.messages.set(msg.author.id, [{id: results.items[index].id, message: newMsg}])
+                        client.messages.set(msg.author.id, [newMsg])
                     }
                 })
             })
