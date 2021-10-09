@@ -1,5 +1,6 @@
 const Command = require("../structs/Command");
 const DB = require("quick.db")
+const {promisify} = require("util")
 module.exports = new Command({
     name: "effect",
     aliases: ["e"],
@@ -8,8 +9,8 @@ module.exports = new Command({
     async run(message, args, client) {
         let effects = Object.keys(client.effects)
         if(effects.includes(args[0])) {
-
-            let filter = client.distube.setFilter(message, args[0]);
+            const setFilter = promisify(client.distube.setFilter)
+            let filter = await setFilter(message, args[0]);
             message.channel.send(`Current queue effect: \`${(filter || "Off")}\``);
         }
         else {
